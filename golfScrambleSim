@@ -27,19 +27,19 @@ risk.df <- data.frame(risk.densities)
 par(mfrow=c(2,2))
 par(mar=rep(2,4))
 
-plot(density(safe.df$a),col='blue',main='Golfer A',col.main='black',font.main=4)
+plot(density(safe.df$a),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer A',col.main='black',font.main=4)
 lines(density(risk.df$a),col='red')
 legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
-plot(density(safe.df$b),col='blue',main='Golfer B',col.main='black',font.main=4)
+plot(density(safe.df$b),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer B',col.main='black',font.main=4)
 lines(density(risk.df$b),col='red')
 legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
-plot(density(safe.df$c),col='blue',main='Golfer C',col.main='black',font.main=4)
+plot(density(safe.df$c),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer C',col.main='black',font.main=4)
 lines(density(risk.df$c),col='red')
 legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
-plot(density(safe.df$d),col='blue',main='Golfer D',col.main='black',font.main=4)
+plot(density(safe.df$d),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer D',col.main='black',font.main=4)
 lines(density(risk.df$d),col='red')
 legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
