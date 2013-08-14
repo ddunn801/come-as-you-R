@@ -1,5 +1,4 @@
 ###Prepare####
-setwd("C:\\Users\\ddunn\\Desktop\\DD\\R\\golfScrambleSim\\")
 library(combinat)
 library(ggplot2)
 library(knitr)
@@ -8,17 +7,20 @@ n <- 1000
 
 
 ###Golfer attributes####
-quality <- seq(1,10)
+safe.attributes <- data.frame(golfer=c('a','b','c','d'),
+                              mean=c(8,7,6,5),
+                              sd=c(1,1,1,1))
+risk.attributes <- data.frame(golfer=c('a','b','c','d'),
+                              mean=c(7,6,5,4),
+                              sd=c(3,3,3,3))
 
-safe.df <- data.frame(a=c(.1,.1,.1,.2,.3,.4,.5,.4,.3,.2),
-                      b=c(.1,.1,.2,.3,.4,.5,.4,.3,.2,.1),
-                      c=c(.1,.2,.3,.4,.5,.4,.3,.2,.1,.0),
-                      d=c(.2,.3,.4,.5,.4,.3,.2,.1,.0,.0))
+safe.densities <- apply(safe.attributes[,-1],1,function(x) sort(rnorm(n=100,mean=x[1],sd=x[2])))
+colnames(safe.densities) <- safe.attributes$golfer
+safe.df <- data.frame(safe.densities)
 
-risk.df <- data.frame(a=c(.1,.1,.2,.3,.4,.5,.4,.3,.2,.4),
-                      b=c(.1,.2,.3,.4,.5,.4,.3,.2,.1,.3),
-                      c=c(.2,.3,.4,.5,.4,.3,.2,.1,.1,.2),
-                      d=c(.3,.4,.5,.4,.3,.2,.1,.1,.1,.1))
+risk.densities <- apply(risk.attributes[,-1],1,function(x) sort(rnorm(n=100,mean=x[1],sd=x[2])))
+colnames(risk.densities) <- risk.attributes$golfer
+risk.df <- data.frame(risk.densities)
 
 
 ###Plot golfer sample attributes####
@@ -59,24 +61,24 @@ for (i in 1:length(golfPerms)){
 ###Process####
 for (j in 1:n){
   for (i in 1:length(golfPerms)){
-    shot1 <- sample(quality,1,T,safe.df[,substr(golfPerms[[i]][1],1,1)])
+    shot1 <- sample(safe.df[,substr(golfPerms[[i]][1],1,1)],1,T)
     
-    if (shot1 >= 5) {
-      shot2 <- max(shot1,sample(quality,1,T,risk.df[,substr(golfPerms[[i]][2],1,1)]))
+    if (shot1 >= 6) {
+      shot2 <- max(shot1,sample(risk.df[,substr(golfPerms[[i]][2],1,1)],1,T))
     } else {
-      shot2 <- max(shot1,sample(quality,1,T,safe.df[,substr(golfPerms[[i]][2],1,1)]))
+      shot2 <- max(shot1,sample(safe.df[,substr(golfPerms[[i]][2],1,1)],1,T))
     }
     
-    if (shot2 >= 5) {
-      shot3 <- max(shot2,sample(quality,1,T,risk.df[,substr(golfPerms[[i]][3],1,1)]))
+    if (shot2 >= 6) {
+      shot3 <- max(shot2,sample(risk.df[,substr(golfPerms[[i]][3],1,1)],1,T))
     } else {
-      shot3 <- max(shot2,sample(quality,1,T,safe.df[,substr(golfPerms[[i]][3],1,1)]))
+      shot3 <- max(shot2,sample(safe.df[,substr(golfPerms[[i]][3],1,1)],1,T))
     }
     
-    if (shot3 >= 5) {
-      shot4 <- max(shot3,sample(quality,1,T,risk.df[,substr(golfPerms[[i]][4],1,1)]))
+    if (shot3 >= 6) {
+      shot4 <- max(shot3,sample(risk.df[,substr(golfPerms[[i]][4],1,1)],1,T))
     } else {
-      shot4 <- max(shot3,sample(quality,1,T,safe.df[,substr(golfPerms[[i]][4],1,1)]))
+      shot4 <- max(shot3,sample(safe.df[,substr(golfPerms[[i]][4],1,1)],1,T))
     }
     
     holes[j,i] <- shot4
@@ -99,3 +101,4 @@ ggplot(data=winnerCounts, aes(x=winners, y=Freq)) +
   guides(fill=FALSE) +
   xlab("Order") + ylab("Wins") +
   ggtitle("Golf Scramble Simulation")
+
