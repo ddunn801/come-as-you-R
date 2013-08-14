@@ -3,22 +3,22 @@ library(combinat)
 library(ggplot2)
 library(knitr)
 set.seed(4444)
-n <- 1000
+n <- 10000
 
 
 ###Golfer attributes####
 safe.attributes <- data.frame(golfer=c('a','b','c','d'),
                               mean=c(8,7,6,5),
-                              sd=c(1,1,1,1))
+                              sd=c(1.5,1.5,1.5,1.5))
 risk.attributes <- data.frame(golfer=c('a','b','c','d'),
                               mean=c(7,6,5,4),
                               sd=c(3,3,3,3))
 
-safe.densities <- apply(safe.attributes[,-1],1,function(x) sort(rnorm(n=100,mean=x[1],sd=x[2])))
+safe.densities <- apply(safe.attributes[,-1],1,function(x) sort(rnorm(n=1000,mean=x[1],sd=x[2])))
 colnames(safe.densities) <- safe.attributes$golfer
 safe.df <- data.frame(safe.densities)
 
-risk.densities <- apply(risk.attributes[,-1],1,function(x) sort(rnorm(n=100,mean=x[1],sd=x[2])))
+risk.densities <- apply(risk.attributes[,-1],1,function(x) sort(rnorm(n=1000,mean=x[1],sd=x[2])))
 colnames(risk.densities) <- risk.attributes$golfer
 risk.df <- data.frame(risk.densities)
 
@@ -27,25 +27,21 @@ risk.df <- data.frame(risk.densities)
 par(mfrow=c(2,2))
 par(mar=rep(2,4))
 
-plot(safe.df$a,type='l',col='blue')
-lines(risk.df$a,type='l',col='red')
-title(main='Golfer A',col.main='black',font.main=4)
+plot(density(safe.df$a),col='blue',main='Golfer A',col.main='black',font.main=4)
+lines(density(risk.df$a),col='red')
 legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
-plot(safe.df$b,type='l',col='blue')
-lines(risk.df$b,type='l',col='red')
-title(main='Golfer B',col.main='black',font.main=4)
+plot(density(safe.df$b),col='blue',main='Golfer B',col.main='black',font.main=4)
+lines(density(risk.df$b),col='red')
 legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
-plot(safe.df$c,type='l',col='blue')
-lines(risk.df$c,type='l',col='red')
-title(main='Golfer C',col.main='black',font.main=4)
-legend('topright',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
+plot(density(safe.df$c),col='blue',main='Golfer C',col.main='black',font.main=4)
+lines(density(risk.df$c),col='red')
+legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
-plot(safe.df$d,type='l',col='blue')
-lines(risk.df$d,type='l',col='red')
-title(main='Golfer D',col.main='black',font.main=4)
-legend('topright',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
+plot(density(safe.df$d),col='blue',main='Golfer D',col.main='black',font.main=4)
+lines(density(risk.df$d),col='red')
+legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
 
 ###Create holes dataframe####
