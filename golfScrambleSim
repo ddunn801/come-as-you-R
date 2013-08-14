@@ -29,19 +29,19 @@ par(mar=rep(2,4))
 
 plot(density(safe.df$a),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer A',col.main='black',font.main=4)
 lines(density(risk.df$a),col='red')
-legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
+legend('topright',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
 plot(density(safe.df$b),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer B',col.main='black',font.main=4)
 lines(density(risk.df$b),col='red')
-legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
+legend('topright',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
 plot(density(safe.df$c),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer C',col.main='black',font.main=4)
 lines(density(risk.df$c),col='red')
-legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
+legend('topright',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
 plot(density(safe.df$d),col='blue',xlim=c(0,16),ylim=c(0,0.3),main='Golfer D',col.main='black',font.main=4)
 lines(density(risk.df$d),col='red')
-legend('topleft',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
+legend('topright',c('safe','risk'),cex=0.8,col=c('blue','red'),lty=1)
 
 
 ###Create holes dataframe####
@@ -97,4 +97,3 @@ ggplot(data=winnerCounts, aes(x=winners, y=Freq)) +
   guides(fill=FALSE) +
   xlab("Order") + ylab("Wins") +
   ggtitle("Golf Scramble Simulation")
-
