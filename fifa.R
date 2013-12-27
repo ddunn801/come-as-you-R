@@ -3,6 +3,8 @@ library(cluster)
 library(fpc)
 library(ggplot2)
 library(foreign)
+library(ggdendro)
+
 set.seed(4444)
 # setwd("C:\\Users\\ddunn\\Dropbox\\DB Cloud-Only Files\\R\\fifa")
 setwd("Z:\\LAD\\CMG Direct Marketing\\Analytics\\R\\Examples\\fifa\\")
@@ -24,6 +26,7 @@ PASLine1 <- 1470
 DRILine1 <- 1475
 DEFLine1 <- 1479
 HEALine1 <- 1482
+TopRAT <- 87.5
 
 
 ###  Create custom urls to scrape  ####
@@ -269,4 +272,30 @@ fit3 <- kmeans(attribs[,4:9],3)
 attribs$kM3 <- fit3$cluster
 plotcluster(attribs[,4:9],attribs$kM3)
 
+
+###  Hierarchical clustering  ####
+Top <- attribs[attribs$RAT>TopRAT,4:9]
+rownames(Top) <- attribs$Name[attribs$RAT>TopRAT]
+ggd.dist <- dist(Top,method="euclidean")
+ggd.hc <- hclust(ggd.dist,method="ward")
+ggd.dhc <- as.dendrogram(ggd.hc)
+ggd.data <- dendro_data(ggd.dhc,type="rectangle")
+labs <- attribs[attribs$RAT>TopRAT,"Name"]
+pos <- attribs[attribs$RAT>TopRAT,"Type"]
+ggplot(segment(ggd.data)) + 
+  geom_segment(aes(x=x,y=y,xend=xend,yend=yend)) + 
+  geom_text(data=label(ggd.data),aes(x=x,y=y,label=labs,hjust=0,color=pos)) + 
+  coord_flip() + scale_y_reverse(expand=c(0.2,0)) + 
+  theme(axis.line.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.title.y=element_blank(),
+        axis.line.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.title.x=element_blank(),
+        panel.background=element_rect(fill="white"),
+        panel.grid=element_blank()) + 
+  theme(legend.justification=c(0,0), legend.position=c(0.25,0.6)) + 
+  ggtitle("Player Tree")
 
