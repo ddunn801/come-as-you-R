@@ -4,10 +4,11 @@ library(fpc)
 library(ggplot2)
 library(foreign)
 library(ggdendro)
+library(reshape2)
 
 set.seed(4444)
-# setwd("C:\\Users\\ddunn\\Dropbox\\DB Cloud-Only Files\\R\\fifa")
-setwd("Z:\\LAD\\CMG Direct Marketing\\Analytics\\R\\Examples\\fifa\\")
+setwd("C:\\Users\\ddunn\\Dropbox\\DB Cloud-Only Files\\R\\fifa")
+#  setwd("Z:\\LAD\\CMG Direct Marketing\\Analytics\\R\\Examples\\fifa\\")
 
 
 ###  Control panel for screen-scraping  ####
@@ -17,15 +18,15 @@ pc.ignore <- 0
 names.page <- 48
 names.lastpage <- 24
 name.gaplines <- 70
-namLine1 <- 1445
-posLine1 <- 1450
-RATLine1 <- 1455
-PACLine1 <- 1460
-SHOLine1 <- 1465
-PASLine1 <- 1470
-DRILine1 <- 1475
-DEFLine1 <- 1479
-HEALine1 <- 1482
+namLine1 <- 1446
+posLine1 <- 1451
+RATLine1 <- 1456
+PACLine1 <- 1461
+SHOLine1 <- 1466
+PASLine1 <- 1471
+DRILine1 <- 1476
+DEFLine1 <- 1480
+HEALine1 <- 1483
 TopRAT <- 87.5
 
 
@@ -121,7 +122,7 @@ rownames(attribs) <- NULL
 
 ###  Clean up foreign characters in names  ####
 Encoding(attribs$Name) <- "UTF-8"
-iconv(attribs$Name,"UTF-8","UTF-8",sub='')
+attribs$Name <- iconv(attribs$Name,"UTF-8","UTF-8",sub='')
 
 
 ###  Create general position type  ####
@@ -211,12 +212,14 @@ tail(attribs[order(attribs$xFactor),
 
 
 ###  Prediction and residual charts for each linear model  ####
-ggplot(attribs,aes(x=RAT,y=Type.Pred)) + 
+ggplot(attribs) + 
+  aes(x=RAT,y=Type.Pred) + 
   geom_point(aes(color=Type),size=3,alpha=0.3) + 
   facet_grid(Type~.) + 
   theme(legend.position="none") + 
   xlab("Actual Rating") + ylab("Predicted Rating") + ggtitle("Model Performance")
-ggplot(attribs,aes(x=Type.xFactor)) + 
+ggplot(attribs) + 
+  aes(x=Type.xFactor) + 
   geom_density(aes(color=Type,fill=Type),alpha=0.3) + 
   xlab("Residual") + ylab("Density") + ggtitle("Model Residuals") + 
   geom_vline(xintercept=0,color="red",size=1,linetype=2) + 
@@ -224,24 +227,27 @@ ggplot(attribs,aes(x=Type.xFactor)) +
 
 
 ###  Dotplots of coefficient weights  ####
-ggplot(NULL,aes(x=def.lm$coefficients[2:7],
-                y=reorder(names(def.lm$coefficients[2:7]),def.lm$coefficients[2:7]))) + 
+ggplot() + 
+  aes(x=def.lm$coefficients[2:7],
+                y=reorder(names(def.lm$coefficients[2:7]),def.lm$coefficients[2:7])) + 
   geom_point(color="red",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
   xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Defense") + 
   geom_vline(xintercept=0,color="gold",size=2,linetype=2) + 
   coord_cartesian(xlim = c(-0.05,0.8))
-ggplot(NULL,aes(x=mid.lm$coefficients[2:7],
-                y=reorder(names(mid.lm$coefficients[2:7]),mid.lm$coefficients[2:7]))) + 
+ggplot() + 
+  aes(x=mid.lm$coefficients[2:7],
+                y=reorder(names(mid.lm$coefficients[2:7]),mid.lm$coefficients[2:7])) + 
   geom_point(color="green",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
   xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Midfield") + 
   geom_vline(xintercept=0,color="gold",size=2,linetype=2) + 
   coord_cartesian(xlim = c(-0.05,0.8))
-ggplot(NULL,aes(x=for.lm$coefficients[2:7],
-                y=reorder(names(for.lm$coefficients[2:7]),for.lm$coefficients[2:7]))) + 
+ggplot() + 
+  aes(x=for.lm$coefficients[2:7],
+                y=reorder(names(for.lm$coefficients[2:7]),for.lm$coefficients[2:7])) + 
   geom_point(color="blue",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
@@ -250,12 +256,14 @@ ggplot(NULL,aes(x=for.lm$coefficients[2:7],
   coord_cartesian(xlim = c(-0.05,0.8))
 
 
-###  Boxcharts of player ratings by type and position
-ggplot(attribs,aes(x=Type,y=RAT)) + 
+###  Boxcharts of player ratings by type and position  ####
+ggplot(attribs) + 
+  aes(x=Type,y=RAT) + 
   geom_boxplot(aes(fill=Type)) + geom_jitter(size=0.5) + 
   theme(legend.position="none") + 
   ylab("Rating") +ggtitle("Player Ratings by Type")
-ggplot(attribs,aes(x=reorder(Position,RAT,FUN=median),y=RAT)) + 
+ggplot(attribs) + 
+  aes(x=reorder(Position,RAT,FUN=median),y=RAT) + 
   geom_boxplot(aes(fill=Position)) + geom_jitter(size=0.5) + 
   theme(legend.position="none") + 
   ylab("Rating") +ggtitle("Player Ratings by Position")
@@ -263,14 +271,19 @@ ggplot(attribs,aes(x=reorder(Position,RAT,FUN=median),y=RAT)) +
 
 ###  k-means clustering  ####
 wss <- (nrow(attribs)-1)*sum(apply(attribs[,4:9],2,var))
-for (w in 2:10){
+for (w in 2:9){
   wss[w] <- sum(kmeans(attribs[,4:9],centers=w)$withinss)
 }
-plot(1:10,wss,type="b",xlab="Number of Clusters",
-     ylab="Within groups sum of squares")
+clusterNums <- seq(from=1,to=9,by=1)
+ggplot() + 
+  aes(x=clusterNums,y=wss) +
+  geom_point(color="brown",size=10) + 
+  coord_cartesian(xlim = c(0,10)) + 
+  scale_x_continuous(breaks=1:9) + 
+  ylab("Weighted Sum of Squares") + xlab("Number of Clusters") + 
+  ggtitle("WSS by Cluster Count")
 fit3 <- kmeans(attribs[,4:9],3)
 attribs$kM3 <- fit3$cluster
-plotcluster(attribs[,4:9],attribs$kM3)
 
 
 ###  Hierarchical clustering  ####
