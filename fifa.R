@@ -154,6 +154,21 @@ attribs$HEA <- as.numeric(attribs$HEA)
 attribs$Type <- ordered(attribs$Type,levels=c("Defense","Midfield","Forward"))
 
 
+###  Boxcharts of player ratings by type and position  ####
+ggplot(attribs) + 
+  aes(x=Type,y=RAT) + 
+  geom_boxplot(aes(fill=Type)) + geom_jitter(size=0.5) + 
+  theme(legend.position="none",
+        axis.title.x=element_blank()) + 
+  ylab("Rating") +ggtitle("Player Ratings by Type")
+ggplot(attribs) + 
+  aes(x=reorder(Position,RAT,FUN=median),y=RAT) + 
+  geom_boxplot(aes(fill=Position)) + geom_jitter(size=0.5) + 
+  theme(legend.position="none",
+        axis.title.x=element_blank()) + 
+  ylab("Rating") +ggtitle("Player Ratings by Position")
+
+
 ###  Linear models for each type of position  ####
 def.lm <- lm(RAT~.,data=attribs[attribs$Type=="Defense",3:9])
 mid.lm <- lm(RAT~.,data=attribs[attribs$Type=="Midfield",3:9])
@@ -161,7 +176,6 @@ for.lm <- lm(RAT~.,data=attribs[attribs$Type=="Forward",3:9])
 summary(def.lm)
 summary(mid.lm)
 summary(for.lm)
-
 attribs$Def.Pred <- predict(def.lm,newdata=attribs[,3:9])
 attribs$Mid.Pred <- predict(mid.lm,newdata=attribs[,3:9])
 attribs$For.Pred <- predict(for.lm,newdata=attribs[,3:9])
@@ -191,26 +205,6 @@ attribs$TypeRow[attribs$Type=="Midfield"] <- seq(length=nrow(attribs[attribs$Typ
 attribs$TypeRow[attribs$Type=="Forward"] <- seq(length=nrow(attribs[attribs$Type=="Forward",]))
 
 
-###  Find players who would be ranked higher in a different type  ####
-head(attribs[attribs$Type=="Defense"&attribs$Best=="Forward",],3)  # D better as F
-head(attribs[attribs$Type=="Defense"&attribs$Best=="Midfield",],3)  # D better as M
-head(attribs[attribs$Type=="Midfield"&attribs$Best=="Defense",],3)  # M better as D
-head(attribs[attribs$Type=="Midfield"&attribs$Best=="Forward",],3)  # M better as F
-head(attribs[attribs$Type=="Forward"&attribs$Best=="Defense",],3)  # F better as D
-head(attribs[attribs$Type=="Forward"&attribs$Best=="Midfield",],3)  # F better as M
-
-
-###  Find outlier predicted players by 
-head(attribs[order(attribs$Type.xFactor),
-             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # < pred in position
-tail(attribs[order(attribs$Type.xFactor),
-             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # > pred in position
-head(attribs[order(attribs$xFactor),
-             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # < pred
-tail(attribs[order(attribs$xFactor),
-             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # > pred
-
-
 ###  Prediction and residual charts for each linear model  ####
 ggplot(attribs) + 
   aes(x=RAT,y=Type.Pred) + 
@@ -229,7 +223,7 @@ ggplot(attribs) +
 ###  Dotplots of coefficient weights  ####
 ggplot() + 
   aes(x=def.lm$coefficients[2:7],
-                y=reorder(names(def.lm$coefficients[2:7]),def.lm$coefficients[2:7])) + 
+      y=reorder(names(def.lm$coefficients[2:7]),def.lm$coefficients[2:7])) + 
   geom_point(color="red",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
@@ -238,7 +232,7 @@ ggplot() +
   coord_cartesian(xlim = c(-0.05,0.8))
 ggplot() + 
   aes(x=mid.lm$coefficients[2:7],
-                y=reorder(names(mid.lm$coefficients[2:7]),mid.lm$coefficients[2:7])) + 
+      y=reorder(names(mid.lm$coefficients[2:7]),mid.lm$coefficients[2:7])) + 
   geom_point(color="green",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
@@ -247,7 +241,7 @@ ggplot() +
   coord_cartesian(xlim = c(-0.05,0.8))
 ggplot() + 
   aes(x=for.lm$coefficients[2:7],
-                y=reorder(names(for.lm$coefficients[2:7]),for.lm$coefficients[2:7])) + 
+      y=reorder(names(for.lm$coefficients[2:7]),for.lm$coefficients[2:7])) + 
   geom_point(color="blue",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
@@ -256,17 +250,24 @@ ggplot() +
   coord_cartesian(xlim = c(-0.05,0.8))
 
 
-###  Boxcharts of player ratings by type and position  ####
-ggplot(attribs) + 
-  aes(x=Type,y=RAT) + 
-  geom_boxplot(aes(fill=Type)) + geom_jitter(size=0.5) + 
-  theme(legend.position="none") + 
-  ylab("Rating") +ggtitle("Player Ratings by Type")
-ggplot(attribs) + 
-  aes(x=reorder(Position,RAT,FUN=median),y=RAT) + 
-  geom_boxplot(aes(fill=Position)) + geom_jitter(size=0.5) + 
-  theme(legend.position="none") + 
-  ylab("Rating") +ggtitle("Player Ratings by Position")
+###  Find players who would be ranked higher in a different type  ####
+head(attribs[attribs$Type=="Defense"&attribs$Best=="Forward",],3)  # D better as F
+head(attribs[attribs$Type=="Defense"&attribs$Best=="Midfield",],3)  # D better as M
+head(attribs[attribs$Type=="Midfield"&attribs$Best=="Defense",],3)  # M better as D
+head(attribs[attribs$Type=="Midfield"&attribs$Best=="Forward",],3)  # M better as F
+head(attribs[attribs$Type=="Forward"&attribs$Best=="Defense",],3)  # F better as D
+head(attribs[attribs$Type=="Forward"&attribs$Best=="Midfield",],3)  # F better as M
+
+
+###  Find outlier predicted players by 
+head(attribs[order(attribs$Type.xFactor),
+             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # < pred in position
+tail(attribs[order(attribs$Type.xFactor),
+             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # > pred in position
+head(attribs[order(attribs$xFactor),
+             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # < pred
+tail(attribs[order(attribs$xFactor),
+             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # > pred
 
 
 ###  k-means clustering  ####
