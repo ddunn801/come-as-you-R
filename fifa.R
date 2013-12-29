@@ -27,7 +27,7 @@ PASLine1 <- 1471
 DRILine1 <- 1476
 DEFLine1 <- 1480
 HEALine1 <- 1483
-TopRAT <- 87.5
+TopRAT <- 88
 
 
 ###  Create custom urls to scrape  ####
