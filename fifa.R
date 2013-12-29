@@ -13,28 +13,28 @@ setwd("C:\\Users\\ddunn\\Dropbox\\DB Cloud-Only Files\\R\\fifa")
 
 ###  Control panel for screen-scraping  ####
 sleep.time <- 0.01
-pagecount <- 226
+pagecount <- 237
 pc.ignore <- 0
-names.page <- 48
-names.lastpage <- 24
-name.gaplines <- 70
-namLine1 <- 1446
-posLine1 <- 1451
-RATLine1 <- 1456
-PACLine1 <- 1461
-SHOLine1 <- 1466
-PASLine1 <- 1471
-DRILine1 <- 1476
-DEFLine1 <- 1480
-HEALine1 <- 1483
-TopRAT <- 88
+names.page <- 50
+names.lastpage <- 37
+name.gaplines <- 41
+namLine1 <- 541
+posLine1 <- 545
+RATLine1 <- 548
+PACLine1 <- 557
+SHOLine1 <- 560
+PASLine1 <- 563
+DRILine1 <- 566
+DEFLine1 <- 569
+HEALine1 <- 572
+TopRAT <- 85
 
 
 ###  Create custom urls to scrape  ####
 pageSeq <- seq(from=1,to=pagecount,by=1)
 urls.df <- data.frame(pageSeq)
 for(i in 1:length(urls.df$pageSeq)){
-  urls.df$url[i] <- paste0("http://www.futhead.com/14/players/?page=",
+  urls.df$url[i] <- paste0("http://www.futhead.com/14/?page=",
                            urls.df$pageSeq[i],
                            "&sort_direction=desc")
 }
@@ -62,12 +62,12 @@ HEASeq <- seq(from=HEALine1,by=name.gaplines,length.out=names.page)
 
 
 ###  Create empty dataframe for storing player stats
-attribs <- data.frame(matrix(nrow=names.page*225+names.lastpage,ncol=9))
+attribs <- data.frame(matrix(nrow=names.page*(pagecount-1)+names.lastpage,ncol=9))
 colnames(attribs) <- c("Name","Position","RAT","PAC","SHO","PAS","DRI","DEF","HEA")
 
 
 ###  Store lines from full pages containing player stats to dataframe  ####
-for(m in 1:(pagecount-pc.ignore)){
+for(m in 1:(pagecount-1-pc.ignore)){
   page <- readLines(paste0(urls.df$pageSeq[m],".txt"))
   for(k in 1:names.page){
     n <- (m-1)*names.page+k
@@ -104,11 +104,16 @@ for(p in 1:names.lastpage){
 attribs$Name <- gsub("^.*<span class=\"name\">","",attribs$Name)
 attribs$Name <- gsub("</span>.*$","",attribs$Name)
 attribs$Position <- gsub("^ *","",attribs$Position)
-attribs$RAT <- gsub("^ *","",attribs$RAT)
-attribs$PAC <- gsub("^ *","",attribs$PAC)
-attribs$SHO <- gsub("^ *","",attribs$SHO)
-attribs$PAS <- gsub("^ *","",attribs$PAS)
-attribs$DRI <- gsub("^ *","",attribs$DRI)
+attribs$RAT <- gsub("^.*<span>","",attribs$RAT)
+attribs$RAT <- gsub("</span>.*$","",attribs$RAT)
+attribs$PAC <- gsub("^.*<span class=\"attribute\">","",attribs$PAC)
+attribs$PAC <- gsub("</span>.*$","",attribs$PAC)
+attribs$SHO <- gsub("^.*<span class=\"attribute\">","",attribs$SHO)
+attribs$SHO <- gsub("</span>.*$","",attribs$SHO)
+attribs$PAS <- gsub("^.*<span class=\"attribute\">","",attribs$PAS)
+attribs$PAS <- gsub("</span>.*$","",attribs$PAS)
+attribs$DRI <- gsub("^.*<span class=\"attribute\">","",attribs$DRI)
+attribs$DRI <- gsub("</span>.*$","",attribs$DRI)
 attribs$DEF <- gsub("^.*<span class=\"attribute\">","",attribs$DEF)
 attribs$DEF <- gsub("</span>.*$","",attribs$DEF)
 attribs$HEA <- gsub("^.*<span class=\"attribute\">","",attribs$HEA)
@@ -126,11 +131,8 @@ attribs$Name <- iconv(attribs$Name,"UTF-8","UTF-8",sub='')
 
 
 ###  Create general position type  ####
-attribs$Type[attribs$Position=="LB"] <- "Defense"
-attribs$Type[attribs$Position=="RB"] <- "Defense"
-attribs$Type[attribs$Position=="CB"] <- "Defense"
-attribs$Type[attribs$Position=="LWB"] <- "Defense"
-attribs$Type[attribs$Position=="RWB"] <- "Defense"
+attribs$Type[attribs$Position=="CF"] <- "Forward"
+attribs$Type[attribs$Position=="ST"] <- "Forward"
 attribs$Type[attribs$Position=="LM"] <- "Midfield"
 attribs$Type[attribs$Position=="RM"] <- "Midfield"
 attribs$Type[attribs$Position=="CDM"] <- "Midfield"
@@ -138,20 +140,25 @@ attribs$Type[attribs$Position=="CM"] <- "Midfield"
 attribs$Type[attribs$Position=="CAM"] <- "Midfield"
 attribs$Type[attribs$Position=="LW"] <- "Midfield"
 attribs$Type[attribs$Position=="RW"] <- "Midfield"
-attribs$Type[attribs$Position=="CF"] <- "Forward"
-attribs$Type[attribs$Position=="ST"] <- "Forward"
+attribs$Type[attribs$Position=="LB"] <- "Defense"
+attribs$Type[attribs$Position=="RB"] <- "Defense"
+attribs$Type[attribs$Position=="CB"] <- "Defense"
+attribs$Type[attribs$Position=="LWB"] <- "Defense"
+attribs$Type[attribs$Position=="RWB"] <- "Defense"
+attribs$Type[attribs$Position=="GK"] <- "Keeper"
 
 
 ###  Change each stat to the appropriate data type  ####
+attribs$Name <- as.character(attribs$Name)
 attribs$Position <- as.factor(attribs$Position)
-attribs$RAT <- as.numeric(attribs$RAT)
-attribs$PAC <- as.numeric(attribs$PAC)
-attribs$SHO <- as.numeric(attribs$SHO)
-attribs$PAS <- as.numeric(attribs$PAS)
-attribs$DRI <- as.numeric(attribs$DRI)
-attribs$DEF <- as.numeric(attribs$DEF)
-attribs$HEA <- as.numeric(attribs$HEA)
-attribs$Type <- ordered(attribs$Type,levels=c("Defense","Midfield","Forward"))
+attribs$RAT <- as.integer(attribs$RAT)
+attribs$PAC <- as.integer(attribs$PAC)
+attribs$SHO <- as.integer(attribs$SHO)
+attribs$PAS <- as.integer(attribs$PAS)
+attribs$DRI <- as.integer(attribs$DRI)
+attribs$DEF <- as.integer(attribs$DEF)
+attribs$HEA <- as.integer(attribs$HEA)
+attribs$Type <- ordered(attribs$Type,levels=c("Forward","Midfield","Defense","Keeper"))
 
 
 ###  Boxcharts of player ratings by type and position  ####
@@ -170,39 +177,45 @@ ggplot(attribs) +
 
 
 ###  Linear models for each type of position  ####
-def.lm <- lm(RAT~.,data=attribs[attribs$Type=="Defense",3:9])
-mid.lm <- lm(RAT~.,data=attribs[attribs$Type=="Midfield",3:9])
 for.lm <- lm(RAT~.,data=attribs[attribs$Type=="Forward",3:9])
-summary(def.lm)
-summary(mid.lm)
+mid.lm <- lm(RAT~.,data=attribs[attribs$Type=="Midfield",3:9])
+def.lm <- lm(RAT~.,data=attribs[attribs$Type=="Defense",3:9])
+kee.lm <- lm(RAT~.,data=attribs[attribs$Type=="Keeper",3:9])
 summary(for.lm)
-attribs$Def.Pred <- predict(def.lm,newdata=attribs[,3:9])
-attribs$Mid.Pred <- predict(mid.lm,newdata=attribs[,3:9])
+summary(mid.lm)
+summary(def.lm)
+summary(kee.lm)
 attribs$For.Pred <- predict(for.lm,newdata=attribs[,3:9])
+attribs$Mid.Pred <- predict(mid.lm,newdata=attribs[,3:9])
+attribs$Def.Pred <- predict(def.lm,newdata=attribs[,3:9])
+attribs$Kee.Pred <- predict(kee.lm,newdata=attribs[,3:9])
 
 
 ###  Find best predicted type by rating  ####
-attribs$Best.Pred <- apply(attribs[,11:13],1,max)
-attribs$Best <- names(attribs[,11:13])[max.col(attribs[,11:13])]
-attribs$Best[attribs$Best=="Def.Pred"] <- "Defense"
-attribs$Best[attribs$Best=="Mid.Pred"] <- "Midfield"
+attribs$Best.Pred <- apply(attribs[,11:14],1,max)
+attribs$Best <- names(attribs[,11:14])[max.col(attribs[,11:14])]
 attribs$Best[attribs$Best=="For.Pred"] <- "Forward"
-attribs$Best <- ordered(attribs$Best,levels=c("Defense","Midfield","Forward"))
+attribs$Best[attribs$Best=="Mid.Pred"] <- "Midfield"
+attribs$Best[attribs$Best=="Def.Pred"] <- "Defense"
+attribs$Best[attribs$Best=="Kee.Pred"] <- "Keeper"
+attribs$Best <- ordered(attribs$Best,levels=c("Forward","Midfield","Defense","Keeper"))
 table(attribs$Type,attribs$Best)
 
 
 ###  Create attribute of predicted rating by actual type
-attribs$Type.Pred[attribs$Type=="Defense"] <- attribs$Def.Pred[attribs$Type=="Defense"]
-attribs$Type.Pred[attribs$Type=="Midfield"] <- attribs$Mid.Pred[attribs$Type=="Midfield"]
 attribs$Type.Pred[attribs$Type=="Forward"] <- attribs$For.Pred[attribs$Type=="Forward"]
+attribs$Type.Pred[attribs$Type=="Midfield"] <- attribs$Mid.Pred[attribs$Type=="Midfield"]
+attribs$Type.Pred[attribs$Type=="Defense"] <- attribs$Def.Pred[attribs$Type=="Defense"]
+attribs$Type.Pred[attribs$Type=="Keeper"] <- attribs$Kee.Pred[attribs$Type=="Keeper"]
 attribs$Type.xFactor <- attribs$Type.Pred - attribs$RAT
 attribs$xFactor <- attribs$Best.Pred - attribs$RAT
 
 
 ###  Create row number by Type  ####
-attribs$TypeRow[attribs$Type=="Defense"] <- seq(length=nrow(attribs[attribs$Type=="Defense",]))
-attribs$TypeRow[attribs$Type=="Midfield"] <- seq(length=nrow(attribs[attribs$Type=="Midfield",]))
 attribs$TypeRow[attribs$Type=="Forward"] <- seq(length=nrow(attribs[attribs$Type=="Forward",]))
+attribs$TypeRow[attribs$Type=="Midfield"] <- seq(length=nrow(attribs[attribs$Type=="Midfield",]))
+attribs$TypeRow[attribs$Type=="Defense"] <- seq(length=nrow(attribs[attribs$Type=="Defense",]))
+attribs$TypeRow[attribs$Type=="Keeper"] <- seq(length=nrow(attribs[attribs$Type=="Keeper",]))
 
 
 ###  Prediction and residual charts for each linear model  ####
@@ -222,12 +235,12 @@ ggplot(attribs) +
 
 ###  Dotplots of coefficient weights  ####
 ggplot() + 
-  aes(x=def.lm$coefficients[2:7],
-      y=reorder(names(def.lm$coefficients[2:7]),def.lm$coefficients[2:7])) + 
+  aes(x=for.lm$coefficients[2:7],
+      y=reorder(names(for.lm$coefficients[2:7]),for.lm$coefficients[2:7])) + 
   geom_point(color="red",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
-  xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Defense") + 
+  xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Forward") + 
   geom_vline(xintercept=0,color="gold",size=2,linetype=2) + 
   coord_cartesian(xlim = c(-0.05,0.8))
 ggplot() + 
@@ -240,34 +253,43 @@ ggplot() +
   geom_vline(xintercept=0,color="gold",size=2,linetype=2) + 
   coord_cartesian(xlim = c(-0.05,0.8))
 ggplot() + 
-  aes(x=for.lm$coefficients[2:7],
-      y=reorder(names(for.lm$coefficients[2:7]),for.lm$coefficients[2:7])) + 
+  aes(x=def.lm$coefficients[2:7],
+      y=reorder(names(def.lm$coefficients[2:7]),def.lm$coefficients[2:7])) + 
   geom_point(color="blue",size=10) + 
   theme(panel.background=element_rect(fill="darkgray")) + 
   theme(legend.position="none") + 
-  xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Forward") + 
+  xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Defense") + 
+  geom_vline(xintercept=0,color="gold",size=2,linetype=2) + 
+  coord_cartesian(xlim = c(-0.05,0.8))
+ggplot() + 
+  aes(x=kee.lm$coefficients[2:7],
+      y=reorder(names(kee.lm$coefficients[2:7]),kee.lm$coefficients[2:7])) + 
+  geom_point(color="purple",size=10) + 
+  theme(panel.background=element_rect(fill="darkgray")) + 
+  theme(legend.position="none") + 
+  xlab("Weight") + ylab("Attribute") + ggtitle("Attribute Weighting for Keeper") + 
   geom_vline(xintercept=0,color="gold",size=2,linetype=2) + 
   coord_cartesian(xlim = c(-0.05,0.8))
 
 
 ###  Find players who would be ranked higher in a different type  ####
-head(attribs[attribs$Type=="Defense"&attribs$Best=="Forward",],3)  # D better as F
-head(attribs[attribs$Type=="Defense"&attribs$Best=="Midfield",],3)  # D better as M
-head(attribs[attribs$Type=="Midfield"&attribs$Best=="Defense",],3)  # M better as D
-head(attribs[attribs$Type=="Midfield"&attribs$Best=="Forward",],3)  # M better as F
 head(attribs[attribs$Type=="Forward"&attribs$Best=="Defense",],3)  # F better as D
 head(attribs[attribs$Type=="Forward"&attribs$Best=="Midfield",],3)  # F better as M
+head(attribs[attribs$Type=="Midfield"&attribs$Best=="Defense",],3)  # M better as D
+head(attribs[attribs$Type=="Midfield"&attribs$Best=="Forward",],3)  # M better as F
+head(attribs[attribs$Type=="Defense"&attribs$Best=="Forward",],3)  # D better as F
+head(attribs[attribs$Type=="Defense"&attribs$Best=="Midfield",],3)  # D better as M
 
 
 ###  Find outlier predicted players by 
 head(attribs[order(attribs$Type.xFactor),
-             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # < pred in position
+             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # > pred in type
 tail(attribs[order(attribs$Type.xFactor),
-             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # > pred in position
+             c("Name","Position","RAT","Type.Pred","xFactor")],3)  # < pred in type
 head(attribs[order(attribs$xFactor),
-             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # < pred
+             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # > pred in best type
 tail(attribs[order(attribs$xFactor),
-             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # > pred
+             c("Name","Position","RAT","Best.Pred","xFactor")],3)  # < pred in best type
 
 
 ###  k-means clustering  ####
@@ -288,17 +310,17 @@ attribs$kM3 <- fit3$cluster
 
 
 ###  Hierarchical clustering  ####
-Top <- attribs[attribs$RAT>TopRAT,4:9]
-rownames(Top) <- attribs$Name[attribs$RAT>TopRAT]
-ggd.dist <- dist(Top,method="euclidean")
-ggd.hc <- hclust(ggd.dist,method="ward")
-ggd.dhc <- as.dendrogram(ggd.hc)
-ggd.data <- dendro_data(ggd.dhc,type="rectangle")
-labs <- attribs[attribs$RAT>TopRAT,"Name"]
-pos <- attribs[attribs$RAT>TopRAT,"Type"]
-ggplot(segment(ggd.data)) + 
+Top <- attribs[attribs$RAT>=TopRAT&attribs$Type!="Keeper",c(1,4:10)]
+rownames(Top) <- Top$Name
+Top.hc <- hclust(dist(Top[2:7],method="euclidean"),method="ward")
+Top.dhc <- as.dendrogram(Top.hc,hang=0.1)
+Top.ddata <-dendro_data(Top.dhc,type="rectangle")
+Top.ddata$labels$Type <- Top$Type[match(Top.ddata$labels$label,Top$Name)]
+Type <- Top.ddata$labels$Type
+ggplot(segment(Top.ddata)) + 
   geom_segment(aes(x=x,y=y,xend=xend,yend=yend)) + 
-  geom_text(data=label(ggd.data),aes(x=x,y=y,label=labs,hjust=0,color=pos)) + 
+  geom_text(data=label(Top.ddata),
+            aes(x=x,y=y,label=label,hjust=0,color=Type)) + 
   coord_flip() + scale_y_reverse(expand=c(0.2,0)) + 
   theme(axis.line.y=element_blank(),
         axis.ticks.y=element_blank(),
