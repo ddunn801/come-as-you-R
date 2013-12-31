@@ -87,10 +87,10 @@ ratings.df$Group[ratings.df$Position=="K"|
 
 ratings.df$Squad[ratings.df$Position=="CB"|
                    ratings.df$Position=="FS"|
-                   ratings.df$Position=="SS"|
-                   ratings.df$Position=="DT"|
+                   ratings.df$Position=="SS"] <- "Defensive Back"
+ratings.df$Squad[ratings.df$Position=="DT"|
                    ratings.df$Position=="LE"|
-                   ratings.df$Position=="RE"] <- "Defensive Back"
+                   ratings.df$Position=="RE"] <- "Defensive Line"
 ratings.df$Squad[ratings.df$Position=="K"|
                    ratings.df$Position=="P"] <- "Kicking"
 ratings.df$Squad[ratings.df$Position=="LOLB"|
@@ -100,7 +100,7 @@ ratings.df$Squad[ratings.df$Position=="C"|
                    ratings.df$Position=="LG"|
                    ratings.df$Position=="LT"|
                    ratings.df$Position=="RG"|
-                   ratings.df$Position=="RT"] <- "Defensive Line"
+                   ratings.df$Position=="RT"] <- "Offensive Line"
 ratings.df$Squad[ratings.df$Position=="FB"|
                    ratings.df$Position=="QB"|
                    ratings.df$Position=="RB"|
