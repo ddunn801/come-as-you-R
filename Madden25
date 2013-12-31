@@ -100,7 +100,7 @@ ratings.df$Squad[ratings.df$Position=="C"|
                    ratings.df$Position=="LG"|
                    ratings.df$Position=="LT"|
                    ratings.df$Position=="RG"|
-                   ratings.df$Position=="RT"] <- "Offensive Line"
+                   ratings.df$Position=="RT"] <- "Defensive Line"
 ratings.df$Squad[ratings.df$Position=="FB"|
                    ratings.df$Position=="QB"|
                    ratings.df$Position=="RB"|
