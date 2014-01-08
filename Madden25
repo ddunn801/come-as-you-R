@@ -1,6 +1,7 @@
 ###  Prepare  ####
 library(cluster)
 library(fpc)
+library(digest)
 library(ggplot2)
 library(foreign)
 library(ggdendro)
@@ -9,57 +10,23 @@ set.seed(4444)
 setwd("C:\\Users\\ddunn\\Dropbox\\DB Cloud-Only Files\\R\\Madden25")
 
 
-###  Scrape html  ####
-#  data from December 28, 2013
-url <- "http://playerratingspro.com/madden-25-latest-roster-player-ratings"
-download.file(url,destfile="ratingsHTML.txt")
-data0 <- readLines("ratingsHTML.txt")
+###  Get spreadsheet  ####
+#  Data is from January 6, 2014
+download.file("http://vassets.ea.com/Assets/Resources/File/Madden25-CompletePlayerRatingsFinal.xlsx",
+              destfile="Madden25-CompletePlayerRatingsFinal.xlsx")
+data0 <- read.csv(file="Madden25-CompletePlayerRatingsFinal.csv",header=T)
 data1 <- data0
 
 
-###  Create ratings dataframe  ####
-nobs <- 2313
-attrs <- 10
-First <- 162
-step <- 3
-ratings.df <- data.frame(matrix(NA,nrow=nobs,ncol=5+attrs))
-colnames(ratings.df) <- c("line","code","Team","First","Last","Full","Group","Squad","Position","Overall",
-                            "Speed","Acceleration","Strength","Agility","Awareness")
-ratings.df$line <- seq(from=First,by=step,length.out=nobs)
-ratings.df$code <- data1[ratings.df$line]
-
-
-###  Remove html wrapped around player stats in each line  ####
-ratings.df$Team <- gsub("^.*\"column-1\">","",ratings.df$code)
-ratings.df$Team <- gsub("</td>.*$","",ratings.df$Team)
-ratings.df$First <- gsub("^.*\"column-2\">","",ratings.df$code)
-ratings.df$First <- gsub("</td>.*$","",ratings.df$First)
-ratings.df$Last <- gsub("^.*\"column-3\">","",ratings.df$code)
-ratings.df$Last <- gsub("</td>.*$","",ratings.df$Last)
-ratings.df$Position <- gsub("^.*\"column-4\">","",ratings.df$code)
-ratings.df$Position <- gsub("</td>.*$","",ratings.df$Position)
-ratings.df$Overall <- gsub("^.*\"column-5\">","",ratings.df$code)
-ratings.df$Overall <- gsub("</td>.*$","",ratings.df$Overall)
-ratings.df$Speed <- gsub("^.*\"column-6\">","",ratings.df$code)
-ratings.df$Speed <- gsub("</td>.*$","",ratings.df$Speed)
-ratings.df$Acceleration <- gsub("^.*\"column-7\">","",ratings.df$code)
-ratings.df$Acceleration <- gsub("</td>.*$","",ratings.df$Acceleration)
-ratings.df$Strength <- gsub("^.*\"column-8\">","",ratings.df$code)
-ratings.df$Strength <- gsub("</td>.*$","",ratings.df$Strength)
-ratings.df$Agility <- gsub("^.*\"column-9\">","",ratings.df$code)
-ratings.df$Agility <- gsub("</td>.*$","",ratings.df$Agility)
-ratings.df$Awareness <- gsub("^.*\"column-10\">","",ratings.df$code)
-ratings.df$Awareness <- gsub("</td>.*$","",ratings.df$Awareness)
-ratings.df$line <- NULL
-ratings.df$code <- NULL
-
-
-###  Clean up names  ####
-ratings.df$Full <- paste0(ratings.df$Last,", ",ratings.df$First)
-Encoding(ratings.df$First) <- "UTF-8"
-iconv(ratings.df$First,"UTF-8","UTF-8",sub='')
-Encoding(ratings.df$Last) <- "UTF-8"
-iconv(ratings.df$Last,"UTF-8","UTF-8",sub='')
+###  Clean up data  ####
+ratings.df <- data1
+ratings.df$First.Name <- as.character(ratings.df$First.Name)
+ratings.df$Last.Name <- as.character(ratings.df$Last.Name)
+Encoding(ratings.df$First.Name) <- "UTF-8"
+iconv(ratings.df$First.Name,"UTF-8","UTF-8",sub='')
+Encoding(ratings.df$Last.Name) <- "UTF-8"
+iconv(ratings.df$Last.Name,"UTF-8","UTF-8",sub='')
+ratings.df$Full.Name <- paste0(ratings.df$Last.Name,", ",ratings.df$First.Name)
 
 
 ###  Identify Groups and Squads  ####
@@ -68,7 +35,7 @@ ratings.df$Group[ratings.df$Position=="C"|
                    ratings.df$Position=="LG"|
                    ratings.df$Position=="LT"|
                    ratings.df$Position=="QB"|
-                   ratings.df$Position=="RB"|
+                   ratings.df$Position=="HB"|
                    ratings.df$Position=="RG"|
                    ratings.df$Position=="RT"|
                    ratings.df$Position=="TE"|
@@ -103,29 +70,16 @@ ratings.df$Squad[ratings.df$Position=="C"|
                    ratings.df$Position=="RT"] <- "Offensive Line"
 ratings.df$Squad[ratings.df$Position=="FB"|
                    ratings.df$Position=="QB"|
-                   ratings.df$Position=="RB"|
+                   ratings.df$Position=="HB"|
                    ratings.df$Position=="TE"|
                    ratings.df$Position=="WR"] <- "Skill"
 
 
-###  Change each stat to the appropriate data type  ####
-ratings.df$Team <- as.factor(ratings.df$Team)
-ratings.df$Group <- as.factor(ratings.df$Group)
-ratings.df$Squad <- as.factor(ratings.df$Squad)
-ratings.df$Position <- as.factor(ratings.df$Position)
-ratings.df$Overall <- as.numeric(ratings.df$Overall)
-ratings.df$Speed <- as.numeric(ratings.df$Speed)
-ratings.df$Acceleration <- as.numeric(ratings.df$Acceleration)
-ratings.df$Strength <- as.numeric(ratings.df$Strength)
-ratings.df$Agility <- as.numeric(ratings.df$Agility)
-ratings.df$Awareness <- as.numeric(ratings.df$Awareness)
-
-
 ###  Hierarchical clustering  ####
 TopRAT <- 95
-Top <- ratings.df[ratings.df$Overall>=TopRAT,c(4:6,9:13)]
-rownames(Top) <- Top$Full
-Top.hc <- hclust(dist(Top[4:8],method="euclidean"),method="ward")
+Top <- ratings.df[ratings.df$Overall>=TopRAT,c(1,6:26,30:61)]
+rownames(Top) <- ratings.df$Full.Name[ratings.df$Overall>=TopRAT]
+Top.hc <- hclust(dist(Top[c(3:22,23:51)],method="euclidean"),method="ward")
 Top.dhc <- as.dendrogram(Top.hc,hang=0.1)
 Top.ddata <-dendro_data(Top.dhc,type="rectangle")
 
@@ -170,6 +124,6 @@ ggplot(segment(Top.ddata)) +
         axis.title.x=element_blank(),
         panel.background=element_rect(fill="white"),
         panel.grid=element_blank()) + 
-  theme(legend.justification=c(0,0), legend.position=c(0.25,0.6)) + 
+  theme(legend.justification=c(0,0), legend.position=c(0.0,0.4)) + 
   ggtitle("Player Tree")
 
