@@ -1,0 +1,76 @@
+Assign n Email Addresses to x Cells, Intrinsically
+========================================================
+
+Sample Use Case:  
+Marketing requests that an email address list be divided randomly into a given number of cells so that each cell would receive a different version of copy.
+
+Below is a technique that takes n email addresses and pseudo-randomly assigns 
+each to one of x cells.  The advantage of this method is that the user does not need to maintain a log of each email address's assigned cell since the cell 
+assignment can be reproduced at any time.
+
+
+First, read in a list of email addresses to be assigned.
+
+```{r}
+emails <- c("vladputin@gmail.ru","j.wilshere@gmail.com","princess27@hotmail.com",
+            "dnnyby@yahoo.com","doctoroctagon@met.com","tommy2@aol.com",
+            "mikef@preds.com","vandyfan@vanderbilt.org","omaha@peyton.com",
+            "cash.johnny@bmi.com","tbright@caterpillar.com","soccermom@aol.com",
+            "1736384647.6365227@compuserve.net","ninfan@aol.com")
+length(emails)
+```
+
+
+Next, assign the number of cells.
+
+```{r}
+cells <- 3
+```
+
+
+Create a vector of the number of characters in each email address.
+
+```{r}
+em.len <- nchar(emails)
+```
+
+
+Use the modulo function (%%) to create a vector of remainders. 1 is added to 
+the number of cells as a holdout.
+
+```{r}
+em.mod <- em.len %% (cells + 1)
+```
+
+
+The table function summarizes how many email addresses have been assigned to 
+each cell (including the holdout).
+
+```{r}
+table(em.mod)
+```
+
+
+Separate the original list of email addresses into the assigned cells.
+
+```{r}
+em.1 <- emails[em.mod==1]  #  cell 1
+em.2 <- emails[em.mod==2]  #  cell 2
+em.3 <- emails[em.mod==3]  #  cell 3
+em.0 <- emails[em.mod==0]  #  control
+```
+
+
+Display the email addresses assigned to each cell.
+
+```{r}
+em.1
+em.2
+em.3
+em.0
+```
+
+
+Now each email address has been assigned to a specific number of given cells.  
+Each email address will always belong to the current cell because the number of 
+characters it has will not change.
